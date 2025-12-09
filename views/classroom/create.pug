@@ -1,0 +1,48 @@
+extends ../layout
+
+block content
+  div.container
+    include ../partials/navbar
+    
+    div.create-classroom(style='max-width: 600px; margin: 50px auto;')
+      h1.mb-4 👨‍🏫 建立課堂
+      
+      div#step1.mb-4
+        div.card
+          div.card-body
+            h4.card-title.mb-4 Step 1: 課堂資訊
+            
+            form#createForm
+              div.form-group.mb-3
+                label(for='classroomName') 課堂名稱
+                input#classroomName.form-control(type='text', name='classroomName', placeholder='例如: 第三單元單字練習', required)
+                small.form-text.text-muted 請輸入容易識別的課堂名稱
+              
+              div.form-group.mb-3
+                label(for='wordFile') 上傳檔案提取單字
+                input#wordFile.form-control(type='file', name='file', accept='.txt,.docx,.pdf,.xlsx,.xls', required)
+                small.form-text.text-muted 支援格式: .txt, .docx, .pdf, .xlsx, .xls
+              
+              div#uploadStatus.mt-3
+              
+              button.btn.btn-primary.btn-lg.w-100(type='submit') 建立課堂
+      
+      div#step2.d-none.mt-4
+        div.card.border-success
+          div.card-body.text-center
+            h3.text-success.mb-4 ✅ 課堂建立成功!
+            
+            div.alert.alert-info
+              h4.mb-3 📋 課堂代碼
+              h1#classroomCode(style='font-size: 60px; font-weight: bold; letter-spacing: 10px;') ----
+              p.mb-0 請將此代碼分享給學生
+            
+            div.mt-4
+              p#classroomInfo 
+              p.text-muted#wordCountInfo
+            
+            div.mt-4
+              a#teacherPanelLink.btn.btn-success.btn-lg(href='#') 前往教師控制台 →
+              a.btn.btn-outline-secondary.mt-2(href='/classroom/create') 建立另一個課堂
+  
+  script(src='/js/classroom-create.js')

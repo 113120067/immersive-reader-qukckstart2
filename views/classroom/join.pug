@@ -1,0 +1,54 @@
+extends ../layout
+
+block content
+  div.container
+    include ../partials/navbar
+    
+    div.join-classroom(style='max-width: 500px; margin: 80px auto;')
+      h1.text-center.mb-4 👨‍🎓 加入課堂
+      
+      div.card.shadow
+        div.card-body.p-4
+          form#joinForm
+            div.form-group.mb-4
+              label(for='classroomCode') 課堂代碼
+              input#classroomCode.form-control.form-control-lg.text-center(
+                type='text', 
+                name='code', 
+                placeholder='請輸入4位數代碼', 
+                maxlength='4',
+                pattern='[0-9]{4}',
+                style='font-size: 2em; letter-spacing: 10px; font-weight: bold;',
+                required
+              )
+              small.form-text.text-muted 請向老師索取課堂代碼
+            
+            div.form-group.mb-4
+              label(for='studentName') 你的姓名
+              input#studentName.form-control.form-control-lg(
+                type='text', 
+                name='studentName', 
+                placeholder='請輸入你的姓名',
+                maxlength='20',
+                required
+              )
+              small.form-text.text-muted 這個姓名會顯示在排行榜上
+            
+            div#joinStatus.mt-3
+            
+            button.btn.btn-success.btn-lg.w-100(type='submit') 加入課堂 →
+      
+      div.text-center.mt-4
+        a.btn.btn-link(href='/classroom') ← 返回首頁
+  
+  script(src='/js/classroom-join.js')
+  
+  style.
+    #classroomCode::-webkit-outer-spin-button,
+    #classroomCode::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    #classroomCode[type=number] {
+      -moz-appearance: textfield;
+    }

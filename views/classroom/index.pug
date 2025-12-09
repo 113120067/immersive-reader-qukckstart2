@@ -1,0 +1,60 @@
+extends ../layout
+
+block content
+  div.container
+    include ../partials/navbar
+    
+    div.classroom-home(style='max-width: 800px; margin: 50px auto; text-align: center;')
+      h1.mb-4 📚 課堂互動學習系統
+      p.lead.mb-5 透過 Immersive Reader 學習單字，與同學一起挑戰排行榜!
+      
+      div.row.mt-5
+        div.col-md-6.mb-4
+          div.card.h-100.shadow(style='cursor: pointer;' onclick='location.href="/classroom/create"')
+            div.card-body.d-flex.flex-column.align-items-center.justify-content-center.p-5
+              div.mb-3(style='font-size: 80px;') 👨‍🏫
+              h3.card-title 我是老師
+              p.card-text.text-muted 建立課堂、上傳單字、查看學生進度
+              a.btn.btn-primary.btn-lg.mt-3(href='/classroom/create') 建立課堂
+        
+        div.col-md-6.mb-4
+          div.card.h-100.shadow(style='cursor: pointer;' onclick='location.href="/classroom/join"')
+            div.card-body.d-flex.flex-column.align-items-center.justify-content-center.p-5
+              div.mb-3(style='font-size: 80px;') 👨‍🎓
+              h3.card-title 我是學生
+              p.card-text.text-muted 加入課堂、學習單字、挑戰排行榜
+              a.btn.btn-success.btn-lg.mt-3(href='/classroom/join') 加入課堂
+      
+      div.mt-5
+        h4.mb-3 📖 如何使用?
+        div.row.text-start
+          div.col-md-6.mb-3
+            div.card
+              div.card-body
+                h5.card-title 👨‍🏫 老師端
+                ol.mb-0
+                  li 點擊「建立課堂」
+                  li 輸入課堂名稱並上傳檔案
+                  li 獲得4位數課堂代碼
+                  li 將代碼分享給學生
+                  li 即時查看學生學習進度
+          
+          div.col-md-6.mb-3
+            div.card
+              div.card-body
+                h5.card-title 👨‍🎓 學生端
+                ol.mb-0
+                  li 點擊「加入課堂」
+                  li 輸入課堂代碼和姓名
+                  li 點擊「開始學習」
+                  li 用 Immersive Reader 學習單字
+                  li 查看自己的排名
+  
+  style.
+    .card:hover {
+      transform: translateY(-5px);
+      transition: transform 0.3s ease;
+    }
+    .card {
+      transition: transform 0.3s ease;
+    }

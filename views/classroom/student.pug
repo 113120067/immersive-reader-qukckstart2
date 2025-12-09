@@ -1,0 +1,98 @@
+extends ../layout
+
+block content
+  div.container
+    include ../partials/navbar
+    
+    div.student-panel(style='max-width: 900px; margin: 30px auto;')
+      div.row.mb-4
+        div.col-md-8
+          h1.mb-2 📚 #{classroom.name}
+          p.mb-0
+            span.text-muted Hi, 
+            strong= studentName
+            span.text-muted  !
+        div.col-md-4.text-end
+          p.mb-1 單字數量: #{classroom.wordCount} 個
+          p.mb-0.text-muted 課堂代碼: 
+            span.badge.bg-secondary= classroom.code
+      
+      div.row.mb-4
+        div.col-md-12
+          div.card.border-primary
+            div.card-body.text-center.p-4
+              h4.mb-3 ⏱️ 我的學習時間
+              h2#myTime(style='font-size: 3em; color: #0d6efd;') 0 分 0 秒
+              
+              div.mt-4
+                button#startBtn.btn.btn-success.btn-lg.px-5(style='font-size: 1.2em;') 
+                  span 🎯 開始學習
+                button#stopBtn.btn.btn-danger.btn-lg.px-5.d-none(style='font-size: 1.2em;')
+                  span ⏹️ 停止學習
+              
+              div.mt-3
+                p#sessionStatus.text-muted
+      
+      div.row
+        div.col-md-6.mb-4
+          div.card
+            div.card-header.d-flex.justify-content-between.align-items-center
+              h5.mb-0 🏅 我的排名
+              button.btn.btn-sm.btn-outline-primary#refreshRankBtn 🔄
+            div.card-body.text-center
+              div#myRank
+                h1(style='font-size: 4em; color: #ffc107;') --
+                p.text-muted 開始學習後顯示排名
+        
+        div.col-md-6.mb-4
+          div.card
+            div.card-header.d-flex.justify-content-between.align-items-center
+              h5.mb-0 🏆 排行榜 Top 5
+              button.btn.btn-sm.btn-outline-primary#refreshLeaderboardBtn 🔄
+            div.card-body(style='max-height: 300px; overflow-y: auto;')
+              div#leaderboardPreview
+                p.text-muted.text-center 載入中...
+      
+      div.alert.alert-info.mt-4
+        h5 💡 學習提示
+        ul.mb-0
+          li 點擊「開始學習」會自動開啟 Immersive Reader
+          li 可以使用朗讀、翻譯、音節等功能幫助學習
+          li 關閉 Immersive Reader 會自動停止計時
+          li 可以重複學習,時間會累計
+          li 學習時間越長,排名越高!
+  
+  script.
+    const classroomCode = '#{classroom.code}';
+    const studentName = '#{studentName}';
+    const words = !{JSON.stringify(classroom.words)};
+  script(src='/js/classroom-student.js')
+  
+  style.
+    .leaderboard-preview-item {
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .leaderboard-preview-item.rank-1 {
+      background-color: #fff3cd;
+      font-weight: bold;
+    }
+    .rank-badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+    }
+    .rank-badge.rank-1 { background-color: #ffd700; }
+    .rank-badge.rank-2 { background-color: #c0c0c0; }
+    .rank-badge.rank-3 { background-color: #cd7f32; }
+    .rank-badge.other { background-color: #6c757d; }

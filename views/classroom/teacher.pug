@@ -1,0 +1,81 @@
+extends ../layout
+
+block content
+  div.container
+    include ../partials/navbar
+    
+    div.teacher-panel(style='max-width: 1000px; margin: 30px auto;')
+      div.row.mb-4
+        div.col-md-8
+          h1.mb-2 👨‍🏫 #{classroom.name}
+          p.text-muted.mb-0 課堂代碼: 
+            span.badge.bg-primary(style='font-size: 1.2em; padding: 8px 15px;')= classroom.code
+        div.col-md-4.text-end
+          p.mb-1 單字數量: #{classroom.wordCount} 個
+          p.mb-1 學生人數: 
+            span#studentCount= classroom.students.length
+          small.text-muted 建立時間: #{new Date(classroom.createdAt).toLocaleString('zh-TW')}
+      
+      div.row
+        div.col-md-12.mb-4
+          div.card
+            div.card-header.d-flex.justify-content-between.align-items-center
+              h4.mb-0 🏆 即時排行榜
+              button.btn.btn-sm.btn-outline-primary#refreshBtn 🔄 重新整理
+            div.card-body
+              div#leaderboardContainer
+                p.text-center.text-muted 載入中...
+      
+      div.row
+        div.col-md-6.mb-4
+          div.card
+            div.card-header
+              h5.mb-0 📊 統計資訊
+            div.card-body
+              div.mb-2
+                strong 平均學習時間: 
+                span#avgTime --
+              div.mb-2
+                strong 最高學習時間: 
+                span#maxTime --
+              div.mb-2
+                strong 活躍學生: 
+                span#activeStudents --
+      
+        div.col-md-6.mb-4
+          div.card
+            div.card-header
+              h5.mb-0 👥 學生列表
+            div.card-body(style='max-height: 300px; overflow-y: auto;')
+              div#studentList
+                p.text-muted 尚無學生加入
+  
+  script.
+    const classroomCode = '#{classroom.code}';
+  script(src='/js/classroom-teacher.js')
+  
+  style.
+    .leaderboard-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    .leaderboard-item.rank-1 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      font-weight: bold;
+    }
+    .leaderboard-item.rank-2 {
+      background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+    }
+    .leaderboard-item.rank-3 {
+      background: linear-gradient(135deg, #cd7f32 0%, #e8a87c 100%);
+    }
+    .badge.active-badge {
+      background-color: #28a745;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
