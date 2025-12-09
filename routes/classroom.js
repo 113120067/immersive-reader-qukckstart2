@@ -186,6 +186,72 @@ router.get('/api/status/:code/:name', (req, res) => {
   res.json({ success: true, status: status });
 });
 
+/**
+ * POST /classroom/api/word/swap - Swap words between students
+ * body: { code, studentA, wordA, studentB, wordB }
+ */
+router.post('/api/word/swap', (req, res) => {
+  const { code, studentA, wordA, studentB, wordB } = req.body;
+  if (!code || !studentA || !studentB || !wordA || !wordB) {
+    return res.status(400).json({ success: false, error: 'Missing parameters' });
+  }
+
+  const result = classroomStore.swapWords(code, studentA, wordA, studentB, wordB);
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error });
+  }
+
+  res.json({ success: true });
+});
+
+/**
+ * POST /classroom/api/word/remove/request - Request to remove a word from a student (creates a voting request)
+ * body: { code, targetStudent, word, requestedBy }
+ */
+router.post('/api/word/remove/request', (req, res) => {
+  const { code, targetStudent, word, requestedBy } = req.body;
+  if (!code || !targetStudent || !word || !requestedBy) {
+    return res.status(400).json({ success: false, error: 'Missing parameters' });
+  }
+
+  const result = classroomStore.requestRemoveWord(code, targetStudent, word, requestedBy);
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error });
+  }
+
+  res.json({ success: true, requestId: result.requestId });
+});
+
+/**
+ * POST /classroom/api/word/remove/vote - Vote to approve a remove request
+ * body: { code, requestId, voterName }
+ */
+router.post('/api/word/remove/vote', (req, res) => {
+  const { code, requestId, voterName } = req.body;
+  if (!code || !requestId || !voterName) {
+    return res.status(400).json({ success: false, error: 'Missing parameters' });
+  }
+
+  const result = classroomStore.voteRemoveRequest(code, requestId, voterName);
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error });
+  }
+
+  // Return updated request status
+  const reqStatus = classroomStore.getRemoveRequest(code, requestId);
+  res.json({ success: true, request: reqStatus });
+});
+
+/**
+ * GET /classroom/api/word/remove/:code/:requestId - Get remove request status
+ */
+router.get('/api/word/remove/:code/:requestId', (req, res) => {
+  const { code, requestId } = req.params;
+  const reqStatus = classroomStore.getRemoveRequest(code, requestId);
+  if (!reqStatus) return res.status(404).json({ success: false, error: 'Request not found' });
+  res.json({ success: true, request: reqStatus });
+});
+
 // Error handler
 router.use(handleMulterError);
 
