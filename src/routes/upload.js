@@ -2,22 +2,50 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
 
 // Configure multer for memory storage (simpler for text processing)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 10 * 1024 * 1024 // 10MB limit (increased for PDF/DOCX)
   },
   fileFilter: function (req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.txt') {
+    if (['.txt', '.docx', '.pdf'].includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Only .txt files are allowed for vocab extraction'));
+      cb(new Error('Only .txt, .docx, and .pdf files are allowed for vocab extraction'));
     }
   }
 });
+
+/**
+ * Extract text from different file formats
+ * @param {Buffer} buffer - File buffer
+ * @param {string} filename - Original filename
+ * @returns {Promise<string>} - Extracted text
+ */
+async function extractText(buffer, filename) {
+  const ext = path.extname(filename).toLowerCase();
+  
+  switch (ext) {
+    case '.txt':
+      return buffer.toString('utf8');
+    
+    case '.docx':
+      const result = await mammoth.extractRawText({ buffer: buffer });
+      return result.value;
+    
+    case '.pdf':
+      const pdfData = await pdfParse(buffer);
+      return pdfData.text;
+    
+    default:
+      throw new Error('Unsupported file format');
+  }
+}
 
 /**
  * Tokenize text into words
@@ -48,7 +76,7 @@ function tokenizeText(text) {
  * Upload a text file and extract vocabulary words
  * Expects multipart/form-data with field name 'file'
  */
-router.post('/api/upload', upload.single('file'), (req, res) => {
+router.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -57,8 +85,8 @@ router.post('/api/upload', upload.single('file'), (req, res) => {
       });
     }
     
-    // Read file content as UTF-8
-    const text = req.file.buffer.toString('utf8');
+    // Extract text based on file type
+    const text = await extractText(req.file.buffer, req.file.originalname);
     
     // Extract and tokenize words
     const words = tokenizeText(text);
@@ -87,7 +115,7 @@ router.use((err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ 
         success: false, 
-        error: 'File size exceeds limit (5MB)' 
+        error: 'File size exceeds limit (10MB)' 
       });
     }
     return res.status(400).json({ 
@@ -98,5 +126,7 @@ router.use((err, req, res, next) => {
   // Pass other errors to next handler
   next(err);
 });
+
+module.exports = router;
 
 module.exports = router;

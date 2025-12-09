@@ -3,14 +3,14 @@ extends layout
 block content
   div.container
     h1 Upload and Save Vocabulary
-    p Upload a text file to extract vocabulary words, select the ones you want to save, and build your personal vocabulary list.
+    p Upload a text file (.txt, .docx, .pdf) to extract vocabulary words, select the ones you want to save, and build your personal vocabulary list.
     
     div#uploadSection.mb-4
-      h2 Step 1: Upload Text File
+      h2 Step 1: Upload File
       form#vocabUploadForm
         div.form-group
-          label(for='vocabFile') Choose a .txt file:
-          input#vocabFile.form-control(type='file', name='file', accept='.txt', required)
+          label(for='vocabFile') Choose a file (.txt, .docx, .pdf):
+          input#vocabFile.form-control(type='file', name='file', accept='.txt,.docx,.pdf', required)
         button.btn.btn-primary(type='submit') Upload and Extract Words
       div#uploadStatus.mt-3
     
@@ -27,6 +27,7 @@ block content
     div#vocabListSection.mb-4
       h2 Saved Vocabulary
       button#refreshVocab.btn.btn-info.btn-sm Refresh List
+      button#reviewWords.btn.btn-primary.btn-sm.ml-2 Review with Immersive Reader
       div#vocabDisplay.mt-3
   
   script(src='/js/upload-vocab.js')

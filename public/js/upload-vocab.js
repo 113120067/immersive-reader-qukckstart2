@@ -109,6 +109,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
+  // Handle review words with Immersive Reader
+  const reviewWordsBtn = document.getElementById('reviewWords');
+  if (reviewWordsBtn) {
+    reviewWordsBtn.addEventListener('click', async function() {
+      try {
+        const response = await fetch('/api/vocab/list');
+        const data = await response.json();
+        
+        if (data.success && data.words.length > 0) {
+          // Prepare vocabulary list for Immersive Reader
+          const vocabHtml = data.words.map(item => 
+            `<p><strong>${escapeHtml(item.word)}</strong> - from: ${escapeHtml(item.source)}</p>`
+          ).join('');
+          
+          launchImmersiveReaderForVocab('My Vocabulary List', vocabHtml);
+        } else {
+          alert('No vocabulary words to review. Please save some words first.');
+        }
+      } catch (error) {
+        alert('Failed to load vocabulary: ' + error.message);
+      }
+    });
+  }
+  
   // Load initial vocab list
   loadVocabList();
 });
@@ -243,5 +267,38 @@ async function loadVocabList() {
     errorDiv.textContent = `Failed to load vocabulary: ${error.message}`;
     vocabDisplay.innerHTML = '';
     vocabDisplay.appendChild(errorDiv);
+  }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Launch Immersive Reader for vocabulary review
+async function launchImmersiveReaderForVocab(title, content) {
+  try {
+    const response = await getTokenAndSubdomainAsync();
+    const token = response.token;
+    const subdomain = response.subdomain;
+    
+    const data = {
+      title: title,
+      chunks: [{
+        content: content,
+        mimeType: "text/html"
+      }]
+    };
+    
+    const options = {
+      uiZIndex: 2000
+    };
+    
+    await ImmersiveReader.launchAsync(token, subdomain, data, options);
+  } catch (error) {
+    console.error('Error launching Immersive Reader:', error);
+    alert('Error launching Immersive Reader. Please check the console for details.');
   }
 }
