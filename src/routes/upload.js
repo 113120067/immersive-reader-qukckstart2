@@ -78,4 +78,25 @@ router.post('/api/upload', upload.single('file'), (req, res) => {
   }
 });
 
+/**
+ * Error handler for multer errors
+ */
+router.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    // Handle multer-specific errors
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'File size exceeds limit (5MB)' 
+      });
+    }
+    return res.status(400).json({ 
+      success: false, 
+      error: 'File upload error: ' + err.message 
+    });
+  }
+  // Pass other errors to next handler
+  next(err);
+});
+
 module.exports = router;

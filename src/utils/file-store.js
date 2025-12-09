@@ -40,8 +40,18 @@ async function readStore() {
 async function writeStore(data) {
   await ensureDataDirectory();
   const tempPath = VOCAB_STORE_PATH + '.tmp';
-  await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf8');
-  await fs.rename(tempPath, VOCAB_STORE_PATH);
+  try {
+    await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf8');
+    await fs.rename(tempPath, VOCAB_STORE_PATH);
+  } catch (error) {
+    // Clean up temp file if rename fails
+    try {
+      await fs.unlink(tempPath);
+    } catch (unlinkError) {
+      // Ignore cleanup errors
+    }
+    throw error;
+  }
 }
 
 /**

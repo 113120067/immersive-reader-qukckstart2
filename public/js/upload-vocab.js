@@ -188,24 +188,60 @@ async function loadVocabList() {
       if (data.words.length === 0) {
         vocabDisplay.innerHTML = '<p class="text-muted">No saved vocabulary yet. Upload a file to get started!</p>';
       } else {
-        let html = `<p><strong>Total saved words: ${data.count}</strong></p>`;
-        html += '<div class="border p-3" style="max-height: 300px; overflow-y: auto;">';
-        html += '<div class="row">';
+        // Create elements safely to prevent XSS
+        vocabDisplay.innerHTML = '';
         
-        data.words.forEach((item, index) => {
-          html += `<div class="col-md-3 col-sm-4 col-6 mb-2">
-            <small><strong>${item.word}</strong><br>
-            <span class="text-muted">From: ${item.source}</span></small>
-          </div>`;
+        const countP = document.createElement('p');
+        const countStrong = document.createElement('strong');
+        countStrong.textContent = `Total saved words: ${data.count}`;
+        countP.appendChild(countStrong);
+        vocabDisplay.appendChild(countP);
+        
+        const containerDiv = document.createElement('div');
+        containerDiv.className = 'border p-3';
+        containerDiv.style.maxHeight = '300px';
+        containerDiv.style.overflowY = 'auto';
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        
+        data.words.forEach((item) => {
+          const colDiv = document.createElement('div');
+          colDiv.className = 'col-md-3 col-sm-4 col-6 mb-2';
+          
+          const smallElem = document.createElement('small');
+          
+          const wordStrong = document.createElement('strong');
+          wordStrong.textContent = item.word;
+          
+          const br = document.createElement('br');
+          
+          const sourceSpan = document.createElement('span');
+          sourceSpan.className = 'text-muted';
+          sourceSpan.textContent = `From: ${item.source}`;
+          
+          smallElem.appendChild(wordStrong);
+          smallElem.appendChild(br);
+          smallElem.appendChild(sourceSpan);
+          colDiv.appendChild(smallElem);
+          rowDiv.appendChild(colDiv);
         });
         
-        html += '</div></div>';
-        vocabDisplay.innerHTML = html;
+        containerDiv.appendChild(rowDiv);
+        vocabDisplay.appendChild(containerDiv);
       }
     } else {
-      vocabDisplay.innerHTML = `<div class="alert alert-danger">Error loading vocabulary: ${data.error}</div>`;
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'alert alert-danger';
+      errorDiv.textContent = `Error loading vocabulary: ${data.error}`;
+      vocabDisplay.innerHTML = '';
+      vocabDisplay.appendChild(errorDiv);
     }
   } catch (error) {
-    vocabDisplay.innerHTML = `<div class="alert alert-danger">Failed to load vocabulary: ${error.message}</div>`;
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger';
+    errorDiv.textContent = `Failed to load vocabulary: ${error.message}`;
+    vocabDisplay.innerHTML = '';
+    vocabDisplay.appendChild(errorDiv);
   }
 }
