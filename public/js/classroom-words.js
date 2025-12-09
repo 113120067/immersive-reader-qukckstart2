@@ -8,7 +8,75 @@ $(document).ready(function() {
 
   // Poll requests every 10s
   setInterval(loadRemoveRequests, 10000);
+  // Practice UI handlers
+  $('#practiceStart').on('click', startPractice);
+  $('#practiceKnow').on('click', () => recordPractice(true));
+  $('#practiceDontKnow').on('click', () => recordPractice(false));
 });
+
+let practiceQueue = [];
+let practiceIndex = 0;
+let practiceActive = false;
+
+function startPractice() {
+  if (!Array.isArray(studentWords) || studentWords.length === 0) {
+    alert('你的個人單字清單為空');
+    return;
+  }
+
+  // shuffle copy
+  practiceQueue = studentWords.slice().sort(() => Math.random() - 0.5);
+  practiceIndex = 0;
+  practiceActive = true;
+
+  $('#practiceStart').addClass('d-none');
+  $('#practiceKnow').removeClass('d-none');
+  $('#practiceDontKnow').removeClass('d-none');
+
+  showPracticeCard();
+}
+
+function showPracticeCard() {
+  const area = $('#practiceCard');
+  const progress = $('#practiceProgress');
+  if (!practiceActive || practiceIndex >= practiceQueue.length) {
+    area.html('<p class="text-success">練習完成！</p>');
+    progress.text('練習已結束');
+    $('#practiceStart').removeClass('d-none');
+    $('#practiceKnow').addClass('d-none');
+    $('#practiceDontKnow').addClass('d-none');
+    practiceActive = false;
+    return;
+  }
+
+  const word = practiceQueue[practiceIndex];
+  area.html(`<h3>${escapeHtml(word)}</h3><p class="text-muted">請按「知道」或「不知道」</p>`);
+  progress.text(`練習 ${practiceIndex + 1} / ${practiceQueue.length}`);
+}
+
+function recordPractice(correct) {
+  if (!practiceActive) return;
+  const word = practiceQueue[practiceIndex];
+
+  // send to server
+  fetch('/classroom/api/word/practice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: classroomCode, studentName: studentName, word: word, correct: !!correct })
+  }).then(r => r.json()).then(resp => {
+    if (!resp.success) {
+      console.warn('record practice failed', resp.error);
+    }
+    // advance
+    practiceIndex += 1;
+    showPracticeCard();
+  }).catch(err => {
+    console.error('Failed to record practice', err);
+    // still advance locally
+    practiceIndex += 1;
+    showPracticeCard();
+  });
+}
 
 function renderWordList() {
   const containerId = '#myWordsContainer';

@@ -266,6 +266,24 @@ router.get('/api/word/remove/list/:code', (req, res) => {
   res.json({ success: true, requests: list });
 });
 
+/**
+ * POST /classroom/api/word/practice - record a practice attempt
+ * body: { code, studentName, word, correct }
+ */
+router.post('/api/word/practice', (req, res) => {
+  const { code, studentName, word, correct } = req.body;
+  if (!code || !studentName || !word || typeof correct === 'undefined') {
+    return res.status(400).json({ success: false, error: 'Missing parameters' });
+  }
+
+  const result = classroomStore.recordPracticeResult(code, studentName, word, !!correct);
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error });
+  }
+
+  res.json({ success: true, stats: result.stats });
+});
+
 // Error handler
 router.use(handleMulterError);
 

@@ -61,6 +61,24 @@ block content
           li 關閉 Immersive Reader 會自動停止計時
           li 可以重複學習,時間會累計
           li 學習時間越長,排名越高!
+
+      // Practice card
+      div.row.mb-4
+        div.col-md-12
+          div.card
+            div.card-header
+              h5.mb-0 📝 練習單字
+            div.card-body
+              div#practiceArea
+                p.text-muted#practiceProgress 尚未開始練習
+                div#practiceCard(class='my-3')
+                div
+                  button#practiceKnow.btn.btn-success.me-2.d-none 知道
+                  button#practiceDontKnow.btn.btn-outline-secondary.d-none 不知道
+                  button#practiceStart.btn.btn-primary 開始練習
+              hr
+              h6.mb-2 我個人單字
+              div#myWordsContainer
   
   script.
     const classroomCode = '#{classroom.code}';

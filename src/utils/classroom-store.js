@@ -77,6 +77,7 @@ function addStudent(code, studentName) {
     lastActive: new Date().toISOString()
     // 每個學生預設擁有一份該 classroom 的單字清單（個人化複本）
     ,words: Array.isArray(classroom.words) ? classroom.words.slice() : []
+    ,wordStats: {} // per-word practice stats: { word: { correct: n, wrong: m } }
   });
   
   return classroom;
@@ -362,6 +363,35 @@ function getAllRemoveRequests(code) {
   return out;
 }
 
+/**
+ * Record a practice result for a student's word
+ * @param {string} code
+ * @param {string} studentName
+ * @param {string} word
+ * @param {boolean} correct
+ */
+function recordPracticeResult(code, studentName, word, correct) {
+  const classroom = classrooms.get(code);
+  if (!classroom) return { success: false, error: 'Classroom not found' };
+
+  const student = classroom.students.find(s => s.name === studentName);
+  if (!student) return { success: false, error: 'Student not found' };
+
+  if (!Array.isArray(student.words) || student.words.indexOf(word) === -1) {
+    return { success: false, error: 'Student does not have that word' };
+  }
+
+  if (!student.wordStats) student.wordStats = {};
+  if (!student.wordStats[word]) student.wordStats[word] = { correct: 0, wrong: 0 };
+
+  if (correct) student.wordStats[word].correct += 1;
+  else student.wordStats[word].wrong += 1;
+
+  student.lastActive = new Date().toISOString();
+
+  return { success: true, stats: student.wordStats[word] };
+}
+
 module.exports = {
   createClassroom,
   getClassroom,
@@ -376,4 +406,5 @@ module.exports = {
   ,voteRemoveRequest
   ,getRemoveRequest
   ,getAllRemoveRequests
+  ,recordPracticeResult
 };
