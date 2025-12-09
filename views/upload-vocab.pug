@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  div.container
+    h1 Upload and Save Vocabulary
+    p Upload a text file to extract vocabulary words, select the ones you want to save, and build your personal vocabulary list.
+    
+    div#uploadSection.mb-4
+      h2 Step 1: Upload Text File
+      form#vocabUploadForm
+        div.form-group
+          label(for='vocabFile') Choose a .txt file:
+          input#vocabFile.form-control(type='file', name='file', accept='.txt', required)
+        button.btn.btn-primary(type='submit') Upload and Extract Words
+      div#uploadStatus.mt-3
+    
+    div#wordSelectionSection.d-none.mb-4
+      h2 Step 2: Select Words to Save
+      div.mb-3
+        button#selectAll.btn.btn-sm.btn-secondary Select All
+        button#deselectAll.btn.btn-sm.btn-secondary.ml-2 Deselect All
+        span.ml-3#wordCount
+      div#wordList.border.p-3(style='max-height: 400px; overflow-y: auto;')
+      button#saveWords.btn.btn-success.mt-3 Save Selected Words
+      div#saveStatus.mt-3
+    
+    div#vocabListSection.mb-4
+      h2 Saved Vocabulary
+      button#refreshVocab.btn.btn-info.btn-sm Refresh List
+      div#vocabDisplay.mt-3
+  
+  script(src='/js/upload-vocab.js')

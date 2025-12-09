@@ -26,6 +26,82 @@
 
 1. Open a web browser and navigate to [http://localhost:3000](http://localhost:3000) to view the sample
 
+## Upload and Save Vocabulary Feature
+
+This application includes a simple vocabulary extraction and storage feature for quick testing. **Note:** This feature uses a local JSON file store without database or authentication - it's intended for development/testing purposes only.
+
+### Features
+
+- **Upload text files** (.txt) to extract vocabulary words
+- **Select and save** words to build a personal vocabulary list
+- **View saved vocabulary** with source information
+
+### Usage
+
+#### Web Interface
+
+1. Navigate to [http://localhost:3000/upload-vocab](http://localhost:3000/upload-vocab)
+2. Upload a .txt file
+3. Select words from the extracted list
+4. Click "Save Selected Words" to add them to your vocabulary
+5. View all saved words in the "Saved Vocabulary" section
+
+#### API Endpoints
+
+**Extract words from uploaded file:**
+```bash
+curl -X POST http://localhost:3000/api/upload \
+  -F "file=@yourfile.txt"
+```
+
+Response:
+```json
+{
+  "success": true,
+  "filename": "yourfile.txt",
+  "wordCount": 150,
+  "words": ["word1", "word2", ...]
+}
+```
+
+**Save selected words:**
+```bash
+curl -X POST http://localhost:3000/api/vocab/save \
+  -H "Content-Type: application/json" \
+  -d '{"words": ["hello", "world"], "source": "myfile.txt"}'
+```
+
+Response:
+```json
+{
+  "success": true,
+  "saved": 2,
+  "total": 50,
+  "newWords": ["hello", "world"]
+}
+```
+
+**List all saved vocabulary:**
+```bash
+curl http://localhost:3000/api/vocab/list
+```
+
+Response:
+```json
+{
+  "success": true,
+  "count": 50,
+  "words": [
+    {"word": "hello", "source": "myfile.txt", "timestamp": "2024-01-01T12:00:00.000Z"},
+    ...
+  ]
+}
+```
+
+### Data Storage
+
+Vocabulary data is stored in `data/vocab-store.json`. This is a simple JSON file (no database required) suitable for testing. The file is created automatically when you save your first words.
+
 ## License
 
 Copyright (c) Microsoft Corporation. All rights reserved.

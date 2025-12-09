@@ -40,4 +40,9 @@ router.get('/GetTokenAndSubdomain', function(req, res) {
     }
 });
 
+/* GET upload-vocab page */
+router.get('/upload-vocab', function(req, res, next) {
+  res.render('upload-vocab', { title: 'Upload and Save Vocabulary' });
+});
+
 module.exports = router;
