@@ -57,7 +57,7 @@ function displayLeaderboard(leaderboard) {
           <div>
             <span style="font-size: 1.5em; margin-right: 10px;">${medal || student.rank}</span>
             <strong style="font-size: 1.2em;">${escapeHtml(student.name)}</strong>
-            ${activebadge}
+            ${activeBadge}
           </div>
           <div class="text-end">
             <div style="font-size: 1.3em; font-weight: bold;">

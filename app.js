@@ -12,6 +12,7 @@ var optionsRouter = require('./routes/options');
 var uploadRouter = require('./routes/upload');
 var apiUploadRouter = require('./src/routes/upload');
 var vocabFileStoreRouter = require('./src/routes/vocab-file-store');
+var classroomRouter = require('./routes/classroom');
 
 var app = express();
 
@@ -31,6 +32,7 @@ app.use('/options', optionsRouter);
 app.use('/', uploadRouter);
 app.use('/', apiUploadRouter);
 app.use('/', vocabFileStoreRouter);
+app.use('/classroom', classroomRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
