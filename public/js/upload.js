@@ -78,7 +78,7 @@ function launchImmersiveReaderWithContent(content) {
                     $('#status').html('<div class="alert alert-danger">Error launching Immersive Reader. Check console for details.</div>');
                 });
         } else {
-            $('#status').html('<div class="alert alert-danger">Immersive Reader SDK not loaded</div>');
+            $('#status').html('<div class="alert alert-danger">Immersive Reader SDK not loaded. Please check your internet connection and refresh the page.</div>');
         }
     })
     .catch(function(error) {

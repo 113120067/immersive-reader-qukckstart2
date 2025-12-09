@@ -80,14 +80,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       }
 
       // Delete temporary file after processing
-      fs.unlinkSync(filePath);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Error deleting temp file:', err);
+      });
 
       return res.json({ success: true, content: content });
     } catch (parseError) {
       // Delete file in case of parsing error
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      fs.unlink(filePath, (err) => {
+        if (err) console.error('Error deleting temp file:', err);
+      });
       console.error('Error parsing file:', parseError);
       return res.status(500).json({ success: false, error: 'Error parsing file: ' + parseError.message });
     }
