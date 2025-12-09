@@ -17,6 +17,7 @@
     "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
     "pug": "3.0.3",
-    "sanitize-html": "^2.11.0"
+    "sanitize-html": "^2.11.0",
+    "xlsx": "^0.18.5"
   }
 }

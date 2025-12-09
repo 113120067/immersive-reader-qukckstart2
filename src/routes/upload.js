@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
+const XLSX = require('xlsx');
 
 // Configure multer for memory storage (simpler for text processing)
 const upload = multer({
@@ -13,10 +14,10 @@ const upload = multer({
   },
   fileFilter: function (req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (['.txt', '.docx', '.pdf'].includes(ext)) {
+    if (['.txt', '.docx', '.pdf', '.xlsx', '.xls'].includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Only .txt, .docx, and .pdf files are allowed for vocab extraction'));
+      cb(new Error('Only .txt, .docx, .pdf, .xlsx, and .xls files are allowed for vocab extraction'));
     }
   }
 });
@@ -41,6 +42,21 @@ async function extractText(buffer, filename) {
     case '.pdf':
       const pdfData = await pdfParse(buffer);
       return pdfData.text;
+    
+    case '.xlsx':
+    case '.xls':
+      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      let allText = '';
+      
+      // Extract text from all sheets
+      workbook.SheetNames.forEach(sheetName => {
+        const worksheet = workbook.Sheets[sheetName];
+        // Convert sheet to CSV format then to plain text
+        const sheetText = XLSX.utils.sheet_to_csv(worksheet);
+        allText += sheetText + '\n';
+      });
+      
+      return allText;
     
     default:
       throw new Error('Unsupported file format');
