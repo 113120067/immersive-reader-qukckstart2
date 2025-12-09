@@ -340,6 +340,28 @@ function getRemoveRequest(code, requestId) {
   };
 }
 
+/**
+ * Return all remove requests for a classroom (serializable array)
+ */
+function getAllRemoveRequests(code) {
+  const requests = removeRequests.get(code);
+  if (!requests) return [];
+  const out = [];
+  for (const r of requests.values()) {
+    out.push({
+      id: r.id,
+      targetStudent: r.targetStudent,
+      word: r.word,
+      requestedBy: r.requestedBy,
+      votes: Array.from(r.votes),
+      status: r.status,
+      createdAt: r.createdAt,
+      executedAt: r.executedAt || null
+    });
+  }
+  return out;
+}
+
 module.exports = {
   createClassroom,
   getClassroom,
@@ -353,4 +375,5 @@ module.exports = {
   ,requestRemoveWord
   ,voteRemoveRequest
   ,getRemoveRequest
+  ,getAllRemoveRequests
 };

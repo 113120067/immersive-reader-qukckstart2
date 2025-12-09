@@ -122,10 +122,15 @@ router.get('/student/:code/:name', (req, res) => {
     });
   }
   
+  // Find the student's personal word list (fallback to classroom.words)
+  const studentObj = classroom.students.find(s => s.name === decodeURIComponent(name));
+  const studentWords = studentObj && Array.isArray(studentObj.words) ? studentObj.words : classroom.words;
+
   res.render('classroom/student', {
     title: 'Learning Session',
     classroom: classroom,
-    studentName: decodeURIComponent(name)
+    studentName: decodeURIComponent(name),
+    studentWords: studentWords
   });
 });
 
@@ -250,6 +255,15 @@ router.get('/api/word/remove/:code/:requestId', (req, res) => {
   const reqStatus = classroomStore.getRemoveRequest(code, requestId);
   if (!reqStatus) return res.status(404).json({ success: false, error: 'Request not found' });
   res.json({ success: true, request: reqStatus });
+});
+
+/**
+ * GET /classroom/api/word/remove/list/:code - list all remove requests for a classroom
+ */
+router.get('/api/word/remove/list/:code', (req, res) => {
+  const { code } = req.params;
+  const list = classroomStore.getAllRemoveRequests(code);
+  res.json({ success: true, requests: list });
 });
 
 // Error handler
