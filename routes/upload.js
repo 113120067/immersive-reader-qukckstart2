@@ -31,7 +31,7 @@ const upload = multer({
 });
 
 // Render upload page
-router.get('/', (req, res) => {
+router.get('/upload', (req, res) => {
   res.render('upload', { title: 'Upload Document' });
 });
 
