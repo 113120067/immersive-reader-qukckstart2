@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.success && data.words.length > 0) {
           // Prepare vocabulary list for Immersive Reader
           const vocabHtml = data.words.map(item => 
-            `<p><strong>${escapeHtml(item.word)}</strong> - from: ${escapeHtml(item.source)}</p>`
+            `<p><strong>${escapeHtml(item.word)}</strong></p>`
           ).join('');
           
           launchImmersiveReaderForVocab('My Vocabulary List', vocabHtml);
@@ -233,21 +233,13 @@ async function loadVocabList() {
           const colDiv = document.createElement('div');
           colDiv.className = 'col-md-3 col-sm-4 col-6 mb-2';
           
-          const smallElem = document.createElement('small');
+          const wordDiv = document.createElement('div');
           
           const wordStrong = document.createElement('strong');
           wordStrong.textContent = item.word;
           
-          const br = document.createElement('br');
-          
-          const sourceSpan = document.createElement('span');
-          sourceSpan.className = 'text-muted';
-          sourceSpan.textContent = `From: ${item.source}`;
-          
-          smallElem.appendChild(wordStrong);
-          smallElem.appendChild(br);
-          smallElem.appendChild(sourceSpan);
-          colDiv.appendChild(smallElem);
+          wordDiv.appendChild(wordStrong);
+          colDiv.appendChild(wordDiv);
           rowDiv.appendChild(colDiv);
         });
         
@@ -288,12 +280,15 @@ async function launchImmersiveReaderForVocab(title, content) {
       title: title,
       chunks: [{
         content: content,
-        mimeType: "text/html"
+        mimeType: "text/html",
+        lang: "en"  // Specify language to enable syllables and picture dictionary
       }]
     };
     
     const options = {
-      uiZIndex: 2000
+      uiZIndex: 2000,
+      disableGrammar: false,  // Ensure grammar features (syllables, picture dictionary) are enabled
+      disableTranslation: false
     };
     
     await ImmersiveReader.launchAsync(token, subdomain, data, options);

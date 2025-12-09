@@ -17,7 +17,7 @@ async function ensureDataDirectory() {
 
 /**
  * Read the vocab store from file
- * @returns {Promise<Object>} The vocab store object with structure: { words: [{word, source, timestamp}] }
+ * @returns {Promise<Object>} The vocab store object with structure: { words: [{word, timestamp}] }
  */
 async function readStore() {
   await ensureDataDirectory();
@@ -57,7 +57,7 @@ async function writeStore(data) {
 /**
  * Append words to the vocab store, avoiding duplicates
  * @param {Array<string>} words - Array of words to add
- * @param {string} source - Source filename or identifier
+ * @param {string} source - Source filename or identifier (not stored, kept for API compatibility)
  * @returns {Promise<Object>} Object with added words and total count
  */
 async function appendWords(words, source) {
@@ -75,7 +75,6 @@ async function appendWords(words, source) {
       existingWords.add(normalizedWord);
       newWords.push({
         word: word,
-        source: source,
         timestamp: timestamp
       });
     }
