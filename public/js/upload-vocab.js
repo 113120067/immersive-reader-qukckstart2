@@ -287,15 +287,9 @@ async function launchImmersiveReaderForVocab(title, content) {
     
     const options = {
       uiZIndex: 2000,
+      uiLang: "zh-Hant",  // Set UI language to Traditional Chinese (Taiwan)
       disableGrammar: false,  // Ensure grammar features (syllables, picture dictionary) are enabled
-      disableTranslation: false,
-      preferences: {
-        translation: {
-          autoEnableDocumentTranslation: true,
-          autoEnableWordTranslation: true,
-          language: "zh-Hant"  // Chinese Traditional (Taiwan)
-        }
-      }
+      disableTranslation: false
     };
     
     await ImmersiveReader.launchAsync(token, subdomain, data, options);
