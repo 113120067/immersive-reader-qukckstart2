@@ -36,6 +36,8 @@ router.get('/upload', (req, res) => {
 });
 
 // Handle file upload
+// TODO: Add rate limiting for production use (e.g., express-rate-limit)
+// TODO: Add authentication/authorization middleware
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
