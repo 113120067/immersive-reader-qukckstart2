@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut as _signOut
+  , signInWithEmailAndPassword, createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 let app = null;
@@ -37,6 +38,16 @@ export async function signInWithGoogle() {
   provider.addScope('profile');
   provider.addScope('email');
   return signInWithPopup(auth, provider);
+}
+
+export async function signInWithEmail(email, password) {
+  await initialize();
+  return signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function createUserWithEmail(email, password) {
+  await initialize();
+  return createUserWithEmailAndPassword(auth, email, password);
 }
 
 export async function logout() {

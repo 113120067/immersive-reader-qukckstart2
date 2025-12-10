@@ -14,10 +14,18 @@
   <div id="user-info" style="margin-bottom:16px;"></div>
   <button id="btn-google">以 Google 登入</button>
   <button id="btn-signout" style="display:none;">登出</button>
+  
+  <div id="email-login" style="margin-top:16px;">
+    <h2>Email 登入</h2>
+    <input id="email" type="email" placeholder="電子郵件" style="display:block;margin:6px 0;padding:8px;width:280px;" />
+    <input id="password" type="password" placeholder="密碼" style="display:block;margin:6px 0;padding:8px;width:280px;" />
+    <button id="btn-email-signin">Email 登入</button>
+    <button id="btn-email-signup">建立帳號</button>
+  </div>
   <p><a href="/upload-vocab">回到 Upload Vocabulary</a> | <a href="/notes.html">我的筆記</a></p>
 
   <script type="module">
-    import { initialize, signInWithGoogle, logout, onAuthStateChanged } from '/firebase-client.js';
+    import { initialize, signInWithGoogle, logout, onAuthStateChanged, signInWithEmail, createUserWithEmail } from '/firebase-client.js';
 
     await initialize();
 
@@ -43,6 +51,37 @@
       } catch (err) {
         console.error('signIn error', err);
         alert('登入失敗：' + (err.message || err));
+      }
+    });
+
+    const btnEmailSignin = document.getElementById('btn-email-signin');
+    const btnEmailSignup = document.getElementById('btn-email-signup');
+    const inputEmail = document.getElementById('email');
+    const inputPassword = document.getElementById('password');
+
+    btnEmailSignin.addEventListener('click', async () => {
+      const email = inputEmail.value.trim();
+      const password = inputPassword.value;
+      if (!email || !password) return alert('請輸入電子郵件與密碼');
+      try {
+        await signInWithEmail(email, password);
+        alert('登入成功');
+      } catch (err) {
+        console.error('email signIn error', err);
+        alert('Email 登入失敗：' + (err.message || err));
+      }
+    });
+
+    btnEmailSignup.addEventListener('click', async () => {
+      const email = inputEmail.value.trim();
+      const password = inputPassword.value;
+      if (!email || !password) return alert('請輸入電子郵件與密碼');
+      try {
+        await createUserWithEmail(email, password);
+        alert('帳號建立並已登入');
+      } catch (err) {
+        console.error('email signup error', err);
+        alert('建立帳號失敗：' + (err.message || err));
       }
     });
 
