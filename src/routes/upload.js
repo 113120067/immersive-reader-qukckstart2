@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 
 // Configure multer for memory storage (simpler for text processing)
 const upload = multer({
@@ -45,15 +45,16 @@ async function extractText(buffer, filename) {
     
     case '.xlsx':
     case '.xls':
-      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
       let allText = '';
       
       // Extract text from all sheets
-      workbook.SheetNames.forEach(sheetName => {
-        const worksheet = workbook.Sheets[sheetName];
-        // Convert sheet to CSV format then to plain text
-        const sheetText = XLSX.utils.sheet_to_csv(worksheet);
-        allText += sheetText + '\n';
+      workbook.eachSheet((worksheet) => {
+        worksheet.eachRow((row) => {
+          const rowValues = row.values.slice(1); // Skip the first empty element
+          allText += rowValues.join(',') + '\n';
+        });
       });
       
       return allText;
