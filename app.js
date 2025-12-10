@@ -13,6 +13,7 @@ var uploadRouter = require('./routes/upload');
 var apiUploadRouter = require('./src/routes/upload');
 var vocabFileStoreRouter = require('./src/routes/vocab-file-store');
 var classroomRouter = require('./routes/classroom');
+var firebaseConfigRouter = require('./routes/firebase-config');
 
 var app = express();
 
@@ -33,6 +34,7 @@ app.use('/', uploadRouter);
 app.use('/', apiUploadRouter);
 app.use('/', vocabFileStoreRouter);
 app.use('/classroom', classroomRouter);
+app.use('/config', firebaseConfigRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
