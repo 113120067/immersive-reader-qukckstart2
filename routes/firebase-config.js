@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-// 回傳 Firebase web app config 給前端（從環境變數取得）
-// 設定環境變數：FIREBASE_API_KEY、FIREBASE_AUTH_DOMAIN、FIREBASE_PROJECT_ID、FIREBASE_APP_ID
+// Returns Firebase web app config to the frontend (retrieved from environment variables)
+// Required environment variables: FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, FIREBASE_APP_ID
 router.get('/config', (req, res) => {
   const cfg = {
     apiKey: process.env.FIREBASE_API_KEY || '',

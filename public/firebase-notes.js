@@ -27,7 +27,7 @@ export async function createNote(title = '', content = '') {
   const db = await ensureDb();
   const { auth } = await initialize();
   const user = auth.currentUser;
-  if (!user) throw new Error('not-authenticated');
+  if (!user) throw new Error('User not authenticated');
 
   const notesCol = collection(db, 'notes');
   const docRef = await addDoc(notesCol, {
@@ -51,7 +51,7 @@ export async function updateNote(id, { title, content }) {
   const db = await ensureDb();
   const { auth } = await initialize();
   const user = auth.currentUser;
-  if (!user) throw new Error('not-authenticated');
+  if (!user) throw new Error('User not authenticated');
 
   const noteRef = doc(db, 'notes', id);
   await updateDoc(noteRef, {
@@ -66,7 +66,7 @@ export async function deleteNote(id) {
   const db = await ensureDb();
   const { auth } = await initialize();
   const user = auth.currentUser;
-  if (!user) throw new Error('not-authenticated');
+  if (!user) throw new Error('User not authenticated');
 
   const noteRef = doc(db, 'notes', id);
   await deleteDoc(noteRef);
@@ -77,7 +77,7 @@ export async function onUserNotesChanged(callback) {
   const db = await ensureDb();
   const { auth } = await initialize();
   const user = auth.currentUser;
-  if (!user) throw new Error('not-authenticated');
+  if (!user) throw new Error('User not authenticated');
 
   const notesCol = collection(db, 'notes');
   const q = query(notesCol, where('owner', '==', user.uid), orderBy('updatedAt', 'desc'));

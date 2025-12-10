@@ -14,9 +14,10 @@ let initialized = false;
 export async function initialize() {
   if (initialized) return { app, auth };
 
-  const res = await fetch('/config', { cache: 'no-store' });
+  const res = await fetch('/config/config', { cache: 'no-store' });
   if (!res.ok) {
-    throw new Error('Failed to load firebase config from /config');
+    const errorText = await res.text().catch(() => 'Unknown error');
+    throw new Error(`Failed to load firebase config from /config/config: ${errorText}`);
   }
   const firebaseConfig = await res.json();
   app = initializeApp(firebaseConfig);
