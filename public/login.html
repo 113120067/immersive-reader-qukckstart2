@@ -25,7 +25,8 @@
   <p><a href="/upload-vocab">回到 Upload Vocabulary</a> | <a href="/notes.html">我的筆記</a></p>
 
   <script type="module">
-    import { initialize, signInWithGoogle, logout, onAuthStateChanged, signInWithEmail, createUserWithEmail } from '/firebase-client.js';
+    // Cache-bust query param added to force fetch of latest firebase-client.js on deployed servers
+    import { initialize, signInWithGoogle, logout, onAuthStateChanged, signInWithEmail, createUserWithEmail } from '/firebase-client.js?v=20251210';
 
     await initialize();
 
