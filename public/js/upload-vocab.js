@@ -5,6 +5,7 @@ import { launchFromHtml } from '/js/immersive-reader-client.js';
 
 let currentWords = [];
 let currentFilename = '';
+let isAuthenticated = false;
 
 document.addEventListener('DOMContentLoaded', function() {
   const uploadForm = document.getElementById('vocabUploadForm');
@@ -68,16 +69,8 @@ document.addEventListener('DOMContentLoaded', function() {
       showSaveStatus('Saving words...', 'info');
 
       try {
-        // Initialize Firebase and check auth state
-        let isAuthenticated = false;
-        try {
-          const { auth } = await initialize();
-          isAuthenticated = !!auth.currentUser;
-        } catch (initErr) {
-          console.warn('Firebase initialize failed or not configured:', initErr);
-          isAuthenticated = false;
-        }
-
+        // If user is authenticated, save to Firestore (existing behaviour).
+        // If not authenticated, persist only in browser sessionStorage (ephemeral).
         if (isAuthenticated) {
           // Save to Firestore notes for authenticated users (store as plain text)
           try {
@@ -106,25 +99,20 @@ document.addEventListener('DOMContentLoaded', function() {
             showSaveStatus('Failed to save to Notes: ' + (noteErr.message || noteErr), 'danger');
           }
         } else {
-          // Keep existing server-side storage for unauthenticated users
-          const response = await fetch('/api/vocab/save', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              words: selectedWords,
-              source: currentFilename
-            })
-          });
-
-          const data = await response.json();
-
-          if (data.success) {
-            showSaveStatus(`Successfully saved ${data.saved} new words. Total vocabulary: ${data.total} words.`, 'success');
+          // Unauthenticated: store in sessionStorage only (ephemeral, cleared on browser close)
+          try {
+            const key = 'tmp_vocabulary';
+            const existing = JSON.parse(sessionStorage.getItem(key) || '[]');
+            // Merge new words without duplicates (case-sensitive preserve original)
+            const set = new Set(existing);
+            for (const w of selectedWords) set.add(w);
+            const merged = Array.from(set);
+            sessionStorage.setItem(key, JSON.stringify(merged));
+            showSaveStatus(`Saved ${selectedWords.length} words to this browser session (won't be persisted).`, 'success');
             loadVocabList();
-          } else {
-            showSaveStatus('Error: ' + (data.error || 'Unknown error'), 'danger');
+          } catch (sessErr) {
+            console.error('Failed to save to sessionStorage:', sessErr);
+            showSaveStatus('Failed to save locally: ' + (sessErr.message || sessErr), 'danger');
           }
         }
       } catch (error) {
@@ -153,6 +141,36 @@ document.addEventListener('DOMContentLoaded', function() {
   if (refreshVocabBtn) {
     refreshVocabBtn.addEventListener('click', function() {
       loadVocabList();
+    });
+  }
+
+  // Handle clear vocab (server-side) for unauthenticated users
+  const clearVocabBtn = document.getElementById('clearVocab');
+  if (clearVocabBtn) {
+    clearVocabBtn.addEventListener('click', async function() {
+      if (!confirm('確定要清除已儲存的 Vocabulary 嗎？此動作無法復原。')) return;
+      try {
+        if (!isAuthenticated) {
+          // Clear session storage for unauthenticated users
+          sessionStorage.removeItem('tmp_vocabulary');
+          alert('已清除本次瀏覽器工作階段的 Vocabulary');
+          loadVocabList();
+          return;
+        }
+
+        // Authenticated: fallback to server-side clear (note: this clears the shared server store)
+        const resp = await fetch('/api/vocab/clear', { method: 'DELETE' });
+        const data = await resp.json();
+        if (data && data.success) {
+          alert('已清除伺服器端的已儲存 Vocabulary');
+          loadVocabList();
+        } else {
+          alert('清除失敗：' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Clear vocab failed:', err);
+        alert('清除失敗：' + (err.message || err));
+      }
     });
   }
   
@@ -194,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let notesUnsubscribe = null;
 
     onAuthStateChanged(async (user) => {
+      isAuthenticated = !!user;
       if (user) {
         // Show notes section and subscribe to realtime notes
         if (userNotesSection) userNotesSection.style.display = 'block';
@@ -216,6 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (userNotesContainer) userNotesContainer.innerHTML = '';
       }
+      // Refresh vocab display when auth state changes because source may differ
+      loadVocabList();
     });
 
     if (openNotesPageBtn) {
@@ -392,7 +413,47 @@ async function loadVocabList() {
   const vocabDisplay = document.getElementById('vocabDisplay');
   if (!vocabDisplay) return;
   
-  try {
+    if (!isAuthenticated) {
+      // Show only session storage words for unauthenticated users (ephemeral)
+      const key = 'tmp_vocabulary';
+      const items = JSON.parse(sessionStorage.getItem(key) || '[]');
+      if (!items || items.length === 0) {
+        vocabDisplay.innerHTML = '<p class="text-muted">No saved vocabulary in this session. Select words and Save to keep them for this browser session.</p>';
+        return;
+      }
+
+      vocabDisplay.innerHTML = '';
+      const countP = document.createElement('p');
+      const countStrong = document.createElement('strong');
+      countStrong.textContent = `Session saved words: ${items.length}`;
+      countP.appendChild(countStrong);
+      vocabDisplay.appendChild(countP);
+
+      const containerDiv = document.createElement('div');
+      containerDiv.className = 'border p-3';
+      containerDiv.style.maxHeight = '300px';
+      containerDiv.style.overflowY = 'auto';
+
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'row';
+
+      items.forEach((w) => {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col-md-3 col-sm-4 col-6 mb-2';
+        const wordDiv = document.createElement('div');
+        const wordStrong = document.createElement('strong');
+        wordStrong.textContent = w;
+        wordDiv.appendChild(wordStrong);
+        colDiv.appendChild(wordDiv);
+        rowDiv.appendChild(colDiv);
+      });
+
+      containerDiv.appendChild(rowDiv);
+      vocabDisplay.appendChild(containerDiv);
+      return;
+    }
+
+    // Authenticated: show server-side stored vocabulary
     const response = await fetch('/api/vocab/list');
     const data = await response.json();
     

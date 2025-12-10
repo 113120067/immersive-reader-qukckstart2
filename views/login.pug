@@ -1,0 +1,111 @@
+extends layout
+
+block content
+  .container(style='max-width:500px;margin-top:20px;')
+    style.
+      body { font-family: system-ui, -apple-system, Roboto, "Noto Sans CJK TC", Arial; }
+      .form-group { margin-bottom: 12px; }
+      label { display:block; margin-bottom:4px; font-weight:500; }
+      input[type="email"], input[type="password"] { width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; }
+      button { padding:8px 12px; border-radius:6px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; margin-right:8px; margin-bottom:8px; }
+      button:hover { background:#e6e6e6; }
+      .button-group { margin-top:16px; }
+      #user-info { margin-bottom:16px; padding:12px; background:#f0f0f0; border-radius:4px; }
+
+    h1 登入
+
+    div#user-info
+
+    .form-group
+      label(for='email') Email:
+      input#email(type='email' placeholder='your@email.com')
+
+    .form-group
+      label(for='password') Password:
+      input#password(type='password' placeholder='Enter password')
+
+    .button-group
+      button#btn-signin Email Sign-in
+      button#btn-create Create Account
+      button#btn-reset Password Reset
+
+    .button-group
+      button#btn-google Google Sign-in
+      button#btn-signout(style='display:none;') Sign-out
+
+    p
+      a(href='/upload-vocab') 回到 Upload Vocabulary
+      |  | 
+      a(href='/notes.html') 我的筆記
+
+    // Firebase auth + UI script (module)
+    script(type='module').
+      import { 
+        initialize, 
+        signInWithGoogle, 
+        signInWithEmail,
+        createAccountWithEmail,
+        resetPassword,
+        logout, 
+        onAuthStateChanged 
+      } from '/firebase-client.js';
+
+      (async () => {
+        await initialize();
+
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const btnSignin = document.getElementById('btn-signin');
+        const btnCreate = document.getElementById('btn-create');
+        const btnReset = document.getElementById('btn-reset');
+        const btnGoogle = document.getElementById('btn-google');
+        const btnSignout = document.getElementById('btn-signout');
+        const userInfo = document.getElementById('user-info');
+
+        onAuthStateChanged(user => {
+          if (user) {
+            userInfo.textContent = `已登入：${user.email} (UID: ${user.uid})`;
+            btnSignin.style.display = 'none';
+            btnCreate.style.display = 'none';
+            btnReset.style.display = 'none';
+            btnGoogle.style.display = 'none';
+            btnSignout.style.display = 'inline-block';
+            emailInput.disabled = true;
+            passwordInput.disabled = true;
+          } else {
+            userInfo.textContent = '未登入';
+            btnSignin.style.display = 'inline-block';
+            btnCreate.style.display = 'inline-block';
+            btnReset.style.display = 'inline-block';
+            btnGoogle.style.display = 'inline-block';
+            btnSignout.style.display = 'none';
+            emailInput.disabled = false;
+            passwordInput.disabled = false;
+          }
+        });
+
+        btnSignin.addEventListener('click', async () => {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          if (!email || !password) { alert('Please enter both email and password'); return; }
+          try { await signInWithEmail(email, password); alert('Sign-in successful!'); } catch (err) { console.error(err); alert('Sign-in failed: ' + (err.message||err)); }
+        });
+
+        btnCreate.addEventListener('click', async () => {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          if (!email || !password) { alert('Please enter both email and password'); return; }
+          if (password.length < 6) { alert('Password must be at least 6 characters'); return; }
+          try { await createAccountWithEmail(email, password); alert('Account created successfully!'); } catch (err) { console.error(err); alert('Failed to create account: ' + (err.message||err)); }
+        });
+
+        btnReset.addEventListener('click', async () => {
+          const email = emailInput.value.trim();
+          if (!email) { alert('Please enter your email address'); return; }
+          try { await resetPassword(email); alert('Password reset email sent!'); } catch (err) { console.error(err); alert('Failed to send reset email: ' + (err.message||err)); }
+        });
+
+        btnGoogle.addEventListener('click', async () => { try { await signInWithGoogle(); } catch (err) { console.error(err); alert('Google sign-in failed: ' + (err.message||err)); } });
+
+        btnSignout.addEventListener('click', async () => { try { await logout(); emailInput.value=''; passwordInput.value=''; alert('Signed out successfully'); } catch (err) { console.error(err); alert('Sign-out failed: ' + (err.message||err)); } });
+      })();

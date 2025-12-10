@@ -64,4 +64,18 @@ router.get('/api/vocab/list', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/vocab/clear
+ * Clear all saved vocabulary (atomic)
+ */
+router.delete('/api/vocab/clear', async (req, res) => {
+  try {
+    await require('../utils/file-store').clearStore();
+    return res.json({ success: true, cleared: true });
+  } catch (error) {
+    console.error('Error clearing vocab store:', error);
+    return res.status(500).json({ success: false, error: 'Failed to clear vocabulary: ' + error.message });
+  }
+});
+
 module.exports = router;

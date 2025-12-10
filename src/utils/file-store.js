@@ -94,5 +94,11 @@ module.exports = {
   readStore,
   writeStore,
   appendWords,
+  // Clear the entire vocab store
+  clearStore: async function() {
+    const empty = { words: [] };
+    await writeStore(empty);
+    return { cleared: true };
+  },
   ensureDataDirectory
 };

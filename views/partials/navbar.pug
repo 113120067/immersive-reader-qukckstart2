@@ -11,7 +11,18 @@ nav
   script(type='module').
     import { initialize, onAuthStateChanged } from '/firebase-client.js';
     (async () =&gt; {
-      try { await initialize(); } catch(e) { /* ignore if not configured */ }
+      let initOk = false;
+      try {
+        await initialize();
+        initOk = true;
+      } catch (e) {
+        console.warn('Navbar: Firebase init failed (notes link will remain hidden)', e);
+      }
+
+      if (!initOk) {
+        return; // do not call onAuthStateChanged if firebase isn't initialized
+      }
+
       onAuthStateChanged(user =&gt; {
         const loginEl = document.getElementById('nav-login');
         const notesEl = document.getElementById('nav-notes');

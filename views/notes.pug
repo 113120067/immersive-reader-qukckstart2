@@ -1,0 +1,185 @@
+extends layout
+
+block content
+  .container
+    h1 我的筆記
+    .user-info#user-info 載入中...
+
+    #auth-required(style='display:none;')
+      p
+        | 請先
+        a(href='/login.html') 登入
+        | 以使用筆記功能。
+
+    #notes-container(style='display:none;')
+      .note-form
+        h2#form-title 新增筆記
+        input#note-title(type='text' placeholder='標題')
+        textarea#note-content(placeholder='內容')
+        button.btn-primary#btn-save 儲存
+        button#btn-cancel(style='display:none;') 取消
+
+      .notes-list
+        h2 所有筆記
+        #notes-list-container.loading 載入筆記中...
+
+    .links
+      a(href='/upload-vocab') 回到 Upload Vocabulary
+      |  |
+      a(href='/login.html') 登入/登出
+
+    // Scripts
+    script(type='module').
+      import { initialize, onAuthStateChanged } from '/firebase-client.js';
+      import { createNote, updateNote, deleteNote, onUserNotesChanged } from '/firebase-notes.js';
+      import { launchFromText } from '/js/immersive-reader-client.js';
+
+      await initialize();
+
+      const userInfo = document.getElementById('user-info');
+      const authRequired = document.getElementById('auth-required');
+      const notesContainer = document.getElementById('notes-container');
+      const noteTitle = document.getElementById('note-title');
+      const noteContent = document.getElementById('note-content');
+      const btnSave = document.getElementById('btn-save');
+      const btnCancel = document.getElementById('btn-cancel');
+      const notesListContainer = document.getElementById('notes-list-container');
+      const formTitle = document.getElementById('form-title');
+
+      let currentUser = null;
+      let unsubscribe = null;
+      let editingNoteId = null;
+
+      onAuthStateChanged(async user => {
+        currentUser = user;
+        if (user) {
+          userInfo.textContent = `已登入：${user.email}`;
+          authRequired.style.display = 'none';
+          notesContainer.style.display = 'block';
+
+          try {
+            if (unsubscribe) unsubscribe();
+            unsubscribe = await onUserNotesChanged(displayNotes);
+          } catch (err) {
+            console.error('Failed to subscribe to notes:', err);
+            notesListContainer.innerHTML = `<div class="error">無法載入筆記：${err.message}</div>`;
+          }
+        } else {
+          userInfo.textContent = '未登入';
+          authRequired.style.display = 'block';
+          notesContainer.style.display = 'none';
+          if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        }
+      });
+
+      function displayNotes(notes) {
+        if (notes.length === 0) {
+          notesListContainer.innerHTML = '<p class="loading">尚無筆記</p>';
+          return;
+        }
+
+        notesListContainer.innerHTML = notes.map(note => `
+          <div class="note-item" data-id="${note.id}">
+            <h3>${escapeHtml(note.title || '(無標題)')}</h3>
+            <div class="note-content">${escapeHtml(note.content || '')}</div>
+            <div class="note-meta">
+              建立：${formatDate(note.createdAt)} | 更新：${formatDate(note.updatedAt)}
+            </div>
+            <div class="note-actions">
+              <button class="btn-edit" data-id="${note.id}">編輯</button>
+              <button class="btn-primary btn-read" data-id="${note.id}">閱讀</button>
+              <button class="btn-danger btn-delete" data-id="${note.id}">刪除</button>
+            </div>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', () => editNote(btn.dataset.id, notes));
+        });
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', () => confirmDeleteNote(btn.dataset.id));
+        });
+        document.querySelectorAll('.btn-read').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            try {
+              btn.disabled = true;
+              btn.textContent = '開啟中...';
+              await launchFromText(note.title || 'Note', note.content || '', note.lang || 'zh-Hant', { uiLang: 'zh-Hant' });
+            } catch (err) {
+              console.error('Immersive Reader error:', err);
+              alert('無法開啟 Immersive Reader：' + (err.message || err));
+            } finally {
+              btn.disabled = false;
+              btn.textContent = '閱讀';
+            }
+          });
+        });
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function formatDate(timestamp) {
+        if (!timestamp) return 'N/A';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleString('zh-TW');
+      }
+
+      function editNote(noteId, notes) {
+        const note = notes.find(n => n.id === noteId);
+        if (!note) return;
+
+        editingNoteId = noteId;
+        noteTitle.value = note.title || '';
+        noteContent.value = note.content || '';
+        formTitle.textContent = '編輯筆記';
+        btnSave.textContent = '更新';
+        btnCancel.style.display = 'inline-block';
+        noteTitle.focus();
+      }
+
+      function cancelEdit() {
+        editingNoteId = null;
+        noteTitle.value = '';
+        noteContent.value = '';
+        formTitle.textContent = '新增筆記';
+        btnSave.textContent = '儲存';
+        btnCancel.style.display = 'none';
+      }
+
+      async function confirmDeleteNote(noteId) {
+        if (!confirm('確定要刪除這則筆記嗎？')) return;
+        try {
+          await deleteNote(noteId);
+          if (editingNoteId === noteId) cancelEdit();
+        } catch (err) {
+          console.error('Delete error:', err);
+          alert('刪除失敗：' + (err.message || err));
+        }
+      }
+
+      btnSave.addEventListener('click', async () => {
+        const title = noteTitle.value.trim();
+        const content = noteContent.value.trim();
+        if (!title && !content) { alert('請至少輸入標題或內容'); return; }
+        try {
+          btnSave.disabled = true; btnSave.textContent = '儲存中...';
+          if (editingNoteId) { await updateNote(editingNoteId, { title, content }); } else { await createNote(title, content); }
+          cancelEdit();
+        } catch (err) {
+          console.error('Save error:', err);
+          alert('儲存失敗：' + (err.message || err));
+        } finally {
+          btnSave.disabled = false; btnSave.textContent = editingNoteId ? '更新' : '儲存';
+        }
+      });
+
+      btnCancel.addEventListener('click', cancelEdit);
+
+      noteTitle.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); btnSave.click(); } });
