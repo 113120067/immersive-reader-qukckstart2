@@ -178,8 +178,9 @@
             建立：${formatDate(note.createdAt)} | 更新：${formatDate(note.updatedAt)}
           </div>
           <div class="note-actions">
-            <button class="btn-edit" data-id="${note.id}">編輯</button>
-            <button class="btn-danger btn-delete" data-id="${note.id}">刪除</button>
+              <button class="btn-edit" data-id="${note.id}">編輯</button>
+              <button class="btn-primary btn-read" data-id="${note.id}">閱讀</button>
+              <button class="btn-danger btn-delete" data-id="${note.id}">刪除</button>
           </div>
         </div>
       `).join('');
@@ -191,6 +192,25 @@
       document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', () => confirmDeleteNote(btn.dataset.id));
       });
+        // Read with Immersive Reader
+        document.querySelectorAll('.btn-read').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            try {
+              btn.disabled = true;
+              btn.textContent = '開啟中...';
+              await readNoteInImmersiveReader(note);
+            } catch (err) {
+              console.error('Immersive Reader error:', err);
+              alert('無法開啟 Immersive Reader：' + (err.message || err));
+            } finally {
+              btn.disabled = false;
+              btn.textContent = '閱讀';
+            }
+          });
+        });
     }
 
     function escapeHtml(text) {
@@ -279,6 +299,33 @@
         btnSave.click();
       }
     });
+
+    // --- Immersive Reader integration ---
+    async function getTokenAndSubdomainAsync() {
+      // This endpoint should be implemented server-side to securely request IR token
+      const res = await fetch('/api/immersive-reader-token');
+      if (!res.ok) throw new Error('Failed to get IR token');
+      return res.json(); // { token, subdomain }
+    }
+
+    function notePlainTextToHtml(text) {
+      return text.split(/\r?\n/)
+        .map(p => p.trim())
+        .filter(p => p.length > 0)
+        .map(p => `<p>${escapeHtml(p)}</p>`)
+        .join('');
+    }
+
+    async function readNoteInImmersiveReader(note) {
+      const { token, subdomain } = await getTokenAndSubdomainAsync();
+      const html = notePlainTextToHtml(note.content || '');
+      const data = {
+        title: note.title || 'Note',
+        chunks: [{ content: html, mimeType: 'text/html', lang: note.lang || 'zh-Hant' }]
+      };
+      const options = { uiLang: 'zh-Hant', uiZIndex: 2000 };
+      await ImmersiveReader.launchAsync(token, subdomain, data, options);
+    }
   </script>
 </body>
 </html>
