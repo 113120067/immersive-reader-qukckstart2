@@ -50,6 +50,34 @@
   </style>
 </head>
 <body>
+  <nav>
+    <a href="/">Home</a> |
+    <a href="/options">Options</a> |
+    <a href="/upload">Upload</a> |
+    <a href="/upload-vocab">Vocabulary</a> |
+    <a href="/classroom">Classroom</a> |
+    <a id="nav-login" href="/login.html">Login</a>
+    <a id="nav-notes" href="/notes.html" style="display:none;margin-left:8px;">My Notes</a>
+  </nav>
+
+  <script type="module">
+    import { initialize, onAuthStateChanged } from '/firebase-client.js';
+    (async () => {
+      try { await initialize(); } catch(e) { /* ignore if not configured */ }
+      onAuthStateChanged(user => {
+        const loginEl = document.getElementById('nav-login');
+        const notesEl = document.getElementById('nav-notes');
+        if (user) {
+          if (loginEl) loginEl.style.display = 'none';
+          if (notesEl) notesEl.style.display = '';
+        } else {
+          if (loginEl) loginEl.style.display = '';
+          if (notesEl) notesEl.style.display = 'none';
+        }
+      });
+    })();
+  </script>
+
   <h1>登入</h1>
 
   <div id="user-info"></div>
