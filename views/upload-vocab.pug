@@ -31,5 +31,12 @@ block content
       button#refreshVocab.btn.btn-info.btn-sm Refresh List
       button#reviewWords.btn.btn-primary.btn-sm.ml-2 Review with Immersive Reader
       div#vocabDisplay.mt-3
+    
+    // Firestore user notes (shown when logged in)
+    div#userNotesSection.mb-4(style='display:none;')
+      h2 Your Notes (Firestore)
+      p.text-muted These are your personal notes stored in Firestore when you're logged in.
+      button#openNotesPage.btn.btn-secondary.btn-sm(type='button') Open Notes Page
+      div#userNotesContainer.mt-3
   
-  script(src='/js/upload-vocab.js')
+  script(type='module' src='/js/upload-vocab.js')
