@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (openNotesPageBtn) {
       openNotesPageBtn.addEventListener('click', () => {
-        window.location.href = '/notes.html';
+        window.location.href = '/notes';
       });
     }
   })();
@@ -413,6 +413,7 @@ async function loadVocabList() {
   const vocabDisplay = document.getElementById('vocabDisplay');
   if (!vocabDisplay) return;
   
+  try {
     if (!isAuthenticated) {
       // Show only session storage words for unauthenticated users (ephemeral)
       const key = 'tmp_vocabulary';

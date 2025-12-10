@@ -45,4 +45,14 @@ router.get('/upload-vocab', function(req, res, next) {
   res.render('upload-vocab', { title: 'Upload and Save Vocabulary' });
 });
 
+/* GET notes page */
+router.get('/notes', function(req, res, next) {
+  res.render('notes', { title: 'My Notes' });
+});
+
+/* GET login page */
+router.get('/login', function(req, res, next) {
+  res.render('login', { title: 'Login' });
+});
+
 module.exports = router;

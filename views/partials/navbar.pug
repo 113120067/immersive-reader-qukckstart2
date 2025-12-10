@@ -4,34 +4,34 @@ nav
   a(href='/upload') Upload | 
   a(href='/upload-vocab') Vocabulary | 
   a(href='/classroom') Classroom | 
-  a#nav-login(href='/login.html') Login
-  a#nav-notes(href='/notes.html', style='display:none;margin-left:8px;') My Notes
+  a#nav-login(href='/login') Login
+  a#nav-notes(href='/notes', style='display:none;margin-left:8px;') My Notes
 
   // client-side auth toggle for navbar links
-  script(type='module').
-    import { initialize, onAuthStateChanged } from '/firebase-client.js';
-    (async () =&gt; {
-      let initOk = false;
-      try {
-        await initialize();
-        initOk = true;
-      } catch (e) {
-        console.warn('Navbar: Firebase init failed (notes link will remain hidden)', e);
-      }
-
-      if (!initOk) {
-        return; // do not call onAuthStateChanged if firebase isn't initialized
-      }
-
-      onAuthStateChanged(user =&gt; {
-        const loginEl = document.getElementById('nav-login');
-        const notesEl = document.getElementById('nav-notes');
-        if (user) {
-          if (loginEl) loginEl.style.display = 'none';
-          if (notesEl) notesEl.style.display = '';
-        } else {
-          if (loginEl) loginEl.style.display = '';
-          if (notesEl) notesEl.style.display = 'none';
-        }
-      });
-    })();
+  script(type='module')
+    | import { initialize, onAuthStateChanged } from '/firebase-client.js';
+    | (async () => {
+    |   let initOk = false;
+    |   try {
+    |     await initialize();
+    |     initOk = true;
+    |   } catch (e) {
+    |     console.warn('Navbar: Firebase init failed (notes link will remain hidden)', e);
+    |   }
+    |
+    |   if (!initOk) {
+    |     return;
+    |   }
+    |
+    |   onAuthStateChanged(user => {
+    |     const loginEl = document.getElementById('nav-login');
+    |     const notesEl = document.getElementById('nav-notes');
+    |     if (user) {
+    |       if (loginEl) loginEl.style.display = 'none';
+    |       if (notesEl) notesEl.style.display = '';
+    |     } else {
+    |       if (loginEl) loginEl.style.display = '';
+    |       if (notesEl) notesEl.style.display = 'none';
+    |     }
+    |   });
+    | })();
