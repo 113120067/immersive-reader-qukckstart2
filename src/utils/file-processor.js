@@ -5,7 +5,7 @@
 
 const mammoth = require('mammoth');
 const pdfParse = require('pdf-parse');
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const sanitizeHtml = require('sanitize-html');
 const fs = require('fs');
 const path = require('path');
@@ -77,13 +77,15 @@ async function extractTextFromBuffer(buffer, filename, options = {}) {
     
     case '.xlsx':
     case '.xls':
-      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
       let allText = '';
       
-      workbook.SheetNames.forEach(sheetName => {
-        const worksheet = workbook.Sheets[sheetName];
-        const sheetText = XLSX.utils.sheet_to_csv(worksheet);
-        allText += sheetText + '\n';
+      workbook.eachSheet((worksheet) => {
+        worksheet.eachRow((row) => {
+          const rowValues = row.values.slice(1); // Skip the first empty element
+          allText += rowValues.join(',') + '\n';
+        });
       });
       
       return allText;
@@ -144,13 +146,15 @@ async function extractTextFromFile(filePath, options = {}) {
     
     case '.xlsx':
     case '.xls':
-      const workbook = XLSX.readFile(filePath);
+      const workbook2 = new ExcelJS.Workbook();
+      await workbook2.xlsx.readFile(filePath);
       let allText = '';
       
-      workbook.SheetNames.forEach(sheetName => {
-        const worksheet = workbook.Sheets[sheetName];
-        const sheetText = XLSX.utils.sheet_to_csv(worksheet);
-        allText += sheetText + '\n';
+      workbook2.eachSheet((worksheet) => {
+        worksheet.eachRow((row) => {
+          const rowValues = row.values.slice(1); // Skip the first empty element
+          allText += rowValues.join(',') + '\n';
+        });
       });
       
       return allText;

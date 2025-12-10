@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>登入</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Roboto, "Noto Sans CJK TC", Arial; padding: 20px; }
+    button { padding:8px 12px; border-radius:6px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>登入</h1>
+  <div id="user-info" style="margin-bottom:16px;"></div>
+  <button id="btn-google">以 Google 登入</button>
+  <button id="btn-signout" style="display:none;">登出</button>
+  <p><a href="/upload-vocab">回到 Upload Vocabulary</a> | <a href="/notes.html">我的筆記</a></p>
+
+  <script type="module">
+    import { initialize, signInWithGoogle, logout, onAuthStateChanged } from '/firebase-client.js';
+
+    await initialize();
+
+    const btnGoogle = document.getElementById('btn-google');
+    const btnSignout = document.getElementById('btn-signout');
+    const userInfo = document.getElementById('user-info');
+
+    onAuthStateChanged(user => {
+      if (user) {
+        userInfo.textContent = `已登入：${user.email} (UID: ${user.uid})`;
+        btnGoogle.style.display = 'none';
+        btnSignout.style.display = 'inline-block';
+      } else {
+        userInfo.textContent = '未登入';
+        btnGoogle.style.display = 'inline-block';
+        btnSignout.style.display = 'none';
+      }
+    });
+
+    btnGoogle.addEventListener('click', async () => {
+      try {
+        await signInWithGoogle();
+      } catch (err) {
+        console.error('signIn error', err);
+        alert('登入失敗：' + (err.message || err));
+      }
+    });
+
+    btnSignout.addEventListener('click', async () => {
+      await logout();
+      location.reload();
+    });
+  </script>
+</body>
+</html>
