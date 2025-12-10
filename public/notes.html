@@ -301,31 +301,11 @@
       }
     });
 
-    // --- Immersive Reader integration ---
-    async function getTokenAndSubdomainAsync() {
-      // This endpoint should be implemented server-side to securely request IR token
-      const res = await fetch('/api/immersive-reader-token');
-      if (!res.ok) throw new Error('Failed to get IR token');
-      return res.json(); // { token, subdomain }
-    }
-
-    function notePlainTextToHtml(text) {
-      return text.split(/\r?\n/)
-        .map(p => p.trim())
-        .filter(p => p.length > 0)
-        .map(p => `<p>${escapeHtml(p)}</p>`)
-        .join('');
-    }
+    // --- Immersive Reader integration (using modular client) ---
+    import { launchFromText } from '/js/immersive-reader-client.js';
 
     async function readNoteInImmersiveReader(note) {
-      const { token, subdomain } = await getTokenAndSubdomainAsync();
-      const html = notePlainTextToHtml(note.content || '');
-      const data = {
-        title: note.title || 'Note',
-        chunks: [{ content: html, mimeType: 'text/html', lang: note.lang || 'zh-Hant' }]
-      };
-      const options = { uiLang: 'zh-Hant', uiZIndex: 2000 };
-      await ImmersiveReader.launchAsync(token, subdomain, data, options);
+      await launchFromText(note.title || 'Note', note.content || '', note.lang || 'zh-Hant', { uiLang: 'zh-Hant' });
     }
   </script>
 </body>

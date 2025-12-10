@@ -1,6 +1,7 @@
 // Upload and Save Vocabulary functionality
 import { initialize, onAuthStateChanged } from '/firebase-client.js';
 import { createNote, onUserNotesChanged, updateNote, deleteNote } from '/firebase-notes.js';
+import { launchFromHtml } from '/js/immersive-reader-client.js';
 
 let currentWords = [];
 let currentFilename = '';
@@ -459,27 +460,7 @@ function escapeHtml(text) {
 // Launch Immersive Reader for vocabulary review
 async function launchImmersiveReaderForVocab(title, content) {
   try {
-    const response = await getTokenAndSubdomainAsync();
-    const token = response.token;
-    const subdomain = response.subdomain;
-    
-    const data = {
-      title: title,
-      chunks: [{
-        content: content,
-        mimeType: "text/html",
-        lang: "en"  // Specify language to enable syllables and picture dictionary
-      }]
-    };
-    
-    const options = {
-      uiZIndex: 2000,
-      uiLang: "zh-Hant",  // Set UI language to Traditional Chinese (Taiwan)
-      disableGrammar: false,  // Ensure grammar features (syllables, picture dictionary) are enabled
-      disableTranslation: false
-    };
-    
-    await ImmersiveReader.launchAsync(token, subdomain, data, options);
+    await launchFromHtml(title, content, 'en', { uiLang: 'zh-Hant' });
   } catch (error) {
     console.error('Error launching Immersive Reader:', error);
     alert('Error launching Immersive Reader. Please check the console for details.');
